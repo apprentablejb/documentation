@@ -1,41 +1,20 @@
-# npm Documentation
+# deliveryEat
 
-[![Publish](https://github.com/npm/documentation/actions/workflows/publish.yml/badge.svg)](https://github.com/npm/documentation/actions/workflows/publish.yml)
+A new Flutter project.
 
-This is the documentation for
-[https://docs.npmjs.com/](https://docs.npmjs.com/).
+## Getting Started
 
-[This repository](https://github.com/npm/documentation) contains the
-content for our documentation site, and the GitHub Actions workflows
-that generate the site itself.
+FlutterFlow projects are built to run on the Flutter _stable_ release.
 
-## Quick start
+### Getting started continued:
 
-1. `npm install` to download gatsby, our theme, and the dependencies
-2. `npm run develop`: starts the test server at `http://localhost:8000`.
-3. Update the content - it's Mdx, which is like markdown - in the `content`
-   directory.
-4. Review your content at `http://localhost:8000`.  (Gatsby watches the
-   filesystem and will reload your content changes immediately.)
-5. Once you're happy, commit it and open a pull request at
-   https://github.com/npm/documentation.
-6. A CI workflow run will publish your PR to a GitHub Preview Page.
-7. Once the content is reviewed, merge the pull request.  That will
-   [deploy the site](https://github.com/npm/documentation/actions/workflows/publish.yml).
+This project is a starting point for a Flutter application.
 
-Do you want to know more? Check out our [contributing guide](CONTRIBUTING.md).
+A few resources to get you started if this is your first Flutter project:
 
-## Theme
+- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
 
-The gatsby theme used here is located in the [`theme/`](./theme) directory. It is a variation of
-[doctocat](https://github.com/primer/doctocat) with some theme changes
-for npm's design language and additional components to support multiple
-versions of the CLI documentation.
-
-## License
-
-The npm product documentation in the content, and static folders are licensed under a [CC-BY 4.0 license](LICENSE).
-
-All other code in this repository is licensed under a [MIT license](LICENSE-CODE).
-
-When using the GitHub logos, be sure to follow the [GitHub logo guidelines](https://github.com/logos).
+For help getting started with Flutter, view our
+[online documentation](https://flutter.dev/docs), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
