@@ -3,9 +3,11 @@ import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -15,14 +17,14 @@ export 'homepage_model.dart';
 
 class HomepageWidget extends StatefulWidget {
   const HomepageWidget({
-    Key? key,
+    super.key,
     this.categories,
-  }) : super(key: key);
+  });
 
   final List<String>? categories;
 
   @override
-  _HomepageWidgetState createState() => _HomepageWidgetState();
+  State<HomepageWidget> createState() => _HomepageWidgetState();
 }
 
 class _HomepageWidgetState extends State<HomepageWidget>
@@ -77,15 +79,10 @@ class _HomepageWidgetState extends State<HomepageWidget>
     super.initState();
     _model = createModel(context, () => HomepageModel());
 
-    // On page load action.
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      setState(() {
-        _model.restaurantFilter =
-            widget.categories?.contains(_model.restaurantFilter)?.toString();
-      });
-    });
-
+    logFirebaseEvent('screen_view', parameters: {'screen_name': 'Homepage'});
     _model.inputSearchController ??= TextEditingController();
+    _model.inputSearchFocusNode ??= FocusNode();
+
     setupAnimations(
       animationsMap.values.where((anim) =>
           anim.trigger == AnimationTrigger.onActionTrigger ||
@@ -105,14 +102,20 @@ class _HomepageWidgetState extends State<HomepageWidget>
 
   @override
   Widget build(BuildContext context) {
+    if (isiOS) {
+      SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(
+          statusBarBrightness: Theme.of(context).brightness,
+          systemStatusBarContrastEnforced: true,
+        ),
+      );
+    }
+
     context.watch<FFAppState>();
 
-    return StreamBuilder<List<RestaurantsRecord>>(
-      stream: queryRestaurantsRecord(
-        queryBuilder: (restaurantsRecord) => restaurantsRecord.where('category',
-            isEqualTo:
-                _model.restaurantFilter != '' ? _model.restaurantFilter : null),
-      ),
+    return StreamBuilder<RestaurantsRecord>(
+      stream: RestaurantsRecord.getDocument(
+          _model.simpleSearchResults.first.reference),
       builder: (context, snapshot) {
         // Customize what your widget looks like when it's loading.
         if (!snapshot.hasData) {
@@ -131,9 +134,11 @@ class _HomepageWidgetState extends State<HomepageWidget>
             ),
           );
         }
-        List<RestaurantsRecord> homepageRestaurantsRecordList = snapshot.data!;
+        final homepageRestaurantsRecord = snapshot.data!;
         return GestureDetector(
-          onTap: () => FocusScope.of(context).requestFocus(_model.unfocusNode),
+          onTap: () => _model.unfocusNode.canRequestFocus
+              ? FocusScope.of(context).requestFocus(_model.unfocusNode)
+              : FocusScope.of(context).unfocus(),
           child: Scaffold(
             key: scaffoldKey,
             backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
@@ -202,12 +207,17 @@ class _HomepageWidgetState extends State<HomepageWidget>
                                       4.0, 0.0, 0.0, 0.0),
                                   child: TextFormField(
                                     controller: _model.inputSearchController,
+                                    focusNode: _model.inputSearchFocusNode,
                                     onChanged: (_) => EasyDebounce.debounce(
                                       '_model.inputSearchController',
                                       Duration(milliseconds: 2000),
                                       () => setState(() {}),
                                     ),
                                     onFieldSubmitted: (_) async {
+                                      logFirebaseEvent(
+                                          'HOMEinputSearch_ON_TEXTFIELD_SUBMIT');
+                                      logFirebaseEvent(
+                                          'inputSearch_simple_search');
                                       await queryRestaurantsRecordOnce()
                                           .then(
                                             (records) => _model
@@ -215,8 +225,8 @@ class _HomepageWidgetState extends State<HomepageWidget>
                                                 TextSearch(
                                               records
                                                   .map(
-                                                    (record) => TextSearchItem(
-                                                        record, [
+                                                    (record) => TextSearchItem
+                                                        .fromTerms(record, [
                                                       record.name!,
                                                       record.category!
                                                     ]),
@@ -280,8 +290,11 @@ class _HomepageWidgetState extends State<HomepageWidget>
                                         ),
                                       ),
                                     ),
-                                    style:
-                                        FlutterFlowTheme.of(context).bodyLarge,
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodyLarge
+                                        .override(
+                                          fontFamily: 'Outfit',
+                                        ),
                                     validator: _model
                                         .inputSearchControllerValidator
                                         .asValidator(context),
@@ -307,121 +320,118 @@ class _HomepageWidgetState extends State<HomepageWidget>
                     Padding(
                       padding:
                           EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
-                      child: Builder(
-                        builder: (context) {
-                          final restaurants =
-                              _model.simpleSearchResults.toList();
-                          return ListView.builder(
-                            padding: EdgeInsets.zero,
-                            primary: false,
-                            shrinkWrap: true,
-                            scrollDirection: Axis.vertical,
-                            itemCount: restaurants.length,
-                            itemBuilder: (context, restaurantsIndex) {
-                              final restaurantsItem =
-                                  restaurants[restaurantsIndex];
-                              return Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    16.0, 0.0, 16.0, 8.0),
-                                child: InkWell(
-                                  splashColor: Colors.transparent,
-                                  focusColor: Colors.transparent,
-                                  hoverColor: Colors.transparent,
-                                  highlightColor: Colors.transparent,
-                                  onTap: () async {
-                                    context.pushNamed(
-                                      'restaurant_detail',
-                                      queryParameters: {
-                                        'restaurantRef': serializeParam(
-                                          restaurantsItem.reference,
-                                          ParamType.DocumentReference,
-                                        ),
-                                      }.withoutNulls,
-                                    );
-                                  },
-                                  child: Container(
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      color: FlutterFlowTheme.of(context)
-                                          .secondaryBackground,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          blurRadius: 4.0,
-                                          color: Color(0x520E151B),
-                                          offset: Offset(0.0, 2.0),
-                                        )
-                                      ],
-                                      borderRadius: BorderRadius.circular(8.0),
+                      child: ListView(
+                        padding: EdgeInsets.zero,
+                        primary: false,
+                        shrinkWrap: true,
+                        scrollDirection: Axis.vertical,
+                        children: [
+                          Padding(
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                16.0, 0.0, 16.0, 8.0),
+                            child: InkWell(
+                              splashColor: Colors.transparent,
+                              focusColor: Colors.transparent,
+                              hoverColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                              onTap: () async {
+                                logFirebaseEvent(
+                                    'HOMEPAGE_PAGE_Container_qcqetu48_ON_TAP');
+                                logFirebaseEvent('Container_navigate_to');
+
+                                context.pushNamed(
+                                  'restaurant_detail',
+                                  queryParameters: {
+                                    'restaurantRef': serializeParam(
+                                      _model
+                                          .simpleSearchResults.first.reference,
+                                      ParamType.DocumentReference,
                                     ),
-                                    child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          12.0, 12.0, 12.0, 12.0),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.max,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(12.0),
-                                            child: Image.network(
-                                              restaurantsItem.image,
-                                              width: double.infinity,
-                                              height: 200.0,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 12.0, 0.0, 0.0),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.max,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text(
-                                                  restaurantsItem.name,
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
-                                                      .bodyLarge,
-                                                ),
-                                                Text(
-                                                  FFLocalizations.of(context)
-                                                      .getText(
-                                                    'pnclskze' /* $126.20 */,
-                                                  ),
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
-                                                      .headlineSmall,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 5.0, 0.0, 0.0),
-                                            child: Text(
-                                              restaurantsItem.category,
+                                  }.withoutNulls,
+                                );
+                              },
+                              child: Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: FlutterFlowTheme.of(context)
+                                      .secondaryBackground,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      blurRadius: 4.0,
+                                      color: Color(0x520E151B),
+                                      offset: Offset(0.0, 2.0),
+                                    )
+                                  ],
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsets.all(12.0),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.max,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(12.0),
+                                        child: Image.network(
+                                          homepageRestaurantsRecord.image,
+                                          width: double.infinity,
+                                          height: 200.0,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            0.0, 12.0, 0.0, 0.0),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.max,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              homepageRestaurantsRecord.name,
                                               style:
                                                   FlutterFlowTheme.of(context)
-                                                      .labelMedium,
+                                                      .bodyLarge
+                                                      .override(
+                                                        fontFamily: 'Outfit',
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .primaryText,
+                                                      ),
                                             ),
-                                          ),
-                                        ],
+                                            Text(
+                                              FFLocalizations.of(context)
+                                                  .getText(
+                                                'pnclskze' /* $126.20 */,
+                                              ),
+                                              style:
+                                                  FlutterFlowTheme.of(context)
+                                                      .headlineSmall,
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
+                                      Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            0.0, 5.0, 0.0, 0.0),
+                                        child: Text(
+                                          homepageRestaurantsRecord.category,
+                                          style: FlutterFlowTheme.of(context)
+                                              .labelMedium,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ).animateOnPageLoad(animationsMap[
-                                    'containerOnPageLoadAnimation']!),
-                              );
-                            },
-                          );
-                        },
+                                ),
+                              ),
+                            ).animateOnPageLoad(
+                                animationsMap['containerOnPageLoadAnimation']!),
+                          ),
+                        ],
                       ),
                     ),
                   ],

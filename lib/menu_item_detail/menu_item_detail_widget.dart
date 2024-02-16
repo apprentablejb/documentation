@@ -5,6 +5,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'menu_item_detail_model.dart';
@@ -12,14 +13,14 @@ export 'menu_item_detail_model.dart';
 
 class MenuItemDetailWidget extends StatefulWidget {
   const MenuItemDetailWidget({
-    Key? key,
+    super.key,
     required this.menuItemRef,
-  }) : super(key: key);
+  });
 
   final DocumentReference? menuItemRef;
 
   @override
-  _MenuItemDetailWidgetState createState() => _MenuItemDetailWidgetState();
+  State<MenuItemDetailWidget> createState() => _MenuItemDetailWidgetState();
 }
 
 class _MenuItemDetailWidgetState extends State<MenuItemDetailWidget> {
@@ -32,7 +33,11 @@ class _MenuItemDetailWidgetState extends State<MenuItemDetailWidget> {
     super.initState();
     _model = createModel(context, () => MenuItemDetailModel());
 
+    logFirebaseEvent('screen_view',
+        parameters: {'screen_name': 'menuItem_Detail'});
     _model.specialinstroductionsController ??= TextEditingController();
+    _model.specialinstroductionsFocusNode ??= FocusNode();
+
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
   }
 
@@ -45,6 +50,15 @@ class _MenuItemDetailWidgetState extends State<MenuItemDetailWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (isiOS) {
+      SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(
+          statusBarBrightness: Theme.of(context).brightness,
+          systemStatusBarContrastEnforced: true,
+        ),
+      );
+    }
+
     context.watch<FFAppState>();
 
     return StreamBuilder<MenuitemsRecord>(
@@ -80,6 +94,8 @@ class _MenuItemDetailWidgetState extends State<MenuItemDetailWidget> {
               hoverColor: Colors.transparent,
               highlightColor: Colors.transparent,
               onTap: () async {
+                logFirebaseEvent('MENU_ITEM_DETAIL_Icon_1g4kgqen_ON_TAP');
+                logFirebaseEvent('Icon_navigate_back');
                 context.pop();
               },
               child: Icon(
@@ -104,8 +120,7 @@ class _MenuItemDetailWidgetState extends State<MenuItemDetailWidget> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding:
-                      EdgeInsetsDirectional.fromSTEB(16.0, 16.0, 16.0, 16.0),
+                  padding: EdgeInsets.all(16.0),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12.0),
                     child: Image.network(
@@ -116,53 +131,35 @@ class _MenuItemDetailWidgetState extends State<MenuItemDetailWidget> {
                     ),
                   ),
                 ),
-                StreamBuilder<List<RestaurantsRecord>>(
-                  stream: queryRestaurantsRecord(),
-                  builder: (context, snapshot) {
-                    // Customize what your widget looks like when it's loading.
-                    if (!snapshot.hasData) {
-                      return Center(
-                        child: SizedBox(
-                          width: 50.0,
-                          height: 50.0,
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              FlutterFlowTheme.of(context).primary,
-                            ),
-                          ),
+                InkWell(
+                  splashColor: Colors.transparent,
+                  focusColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  onTap: () async {
+                    logFirebaseEvent('MENU_ITEM_DETAIL_PAGE_title_text_ON_TAP');
+                    logFirebaseEvent('title_text_navigate_to');
+
+                    context.pushNamed(
+                      'menuItem_Detail',
+                      queryParameters: {
+                        'menuItemRef': serializeParam(
+                          widget.menuItemRef,
+                          ParamType.DocumentReference,
                         ),
-                      );
-                    }
-                    List<RestaurantsRecord> titleTextRestaurantsRecordList =
-                        snapshot.data!;
-                    return InkWell(
-                      splashColor: Colors.transparent,
-                      focusColor: Colors.transparent,
-                      hoverColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      onTap: () async {
-                        context.pushNamed(
-                          'menuItem_Detail',
-                          queryParameters: {
-                            'menuItemRef': serializeParam(
-                              widget.menuItemRef,
-                              ParamType.DocumentReference,
-                            ),
-                          }.withoutNulls,
-                          extra: <String, dynamic>{
-                            kTransitionInfoKey: TransitionInfo(
-                              hasTransition: true,
-                              transitionType: PageTransitionType.bottomToTop,
-                            ),
-                          },
-                        );
+                      }.withoutNulls,
+                      extra: <String, dynamic>{
+                        kTransitionInfoKey: TransitionInfo(
+                          hasTransition: true,
+                          transitionType: PageTransitionType.bottomToTop,
+                        ),
                       },
-                      child: Text(
-                        menuItemDetailMenuitemsRecord.name,
-                        style: FlutterFlowTheme.of(context).headlineMedium,
-                      ),
                     );
                   },
+                  child: Text(
+                    menuItemDetailMenuitemsRecord.name,
+                    style: FlutterFlowTheme.of(context).headlineMedium,
+                  ),
                 ),
                 Row(
                   mainAxisSize: MainAxisSize.max,
@@ -215,10 +212,10 @@ class _MenuItemDetailWidgetState extends State<MenuItemDetailWidget> {
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   child: Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(10.0, 10.0, 10.0, 10.0),
+                    padding: EdgeInsets.all(10.0),
                     child: TextFormField(
                       controller: _model.specialinstroductionsController,
+                      focusNode: _model.specialinstroductionsFocusNode,
                       autofocus: true,
                       obscureText: false,
                       decoration: InputDecoration(
@@ -246,6 +243,9 @@ class _MenuItemDetailWidgetState extends State<MenuItemDetailWidget> {
                   children: [
                     FFButtonWidget(
                       onPressed: () async {
+                        logFirebaseEvent(
+                            'MENU_ITEM_DETAIL_PAGE_BUTTON_BTN_ON_TAP');
+                        logFirebaseEvent('Button_update_app_state');
                         setState(() {
                           FFAppState().addToCart(CartItemtypeStruct(
                             menuItemRef:
@@ -265,8 +265,7 @@ class _MenuItemDetailWidgetState extends State<MenuItemDetailWidget> {
                       options: FFButtonOptions(
                         width: 300.0,
                         height: 40.0,
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                        padding: EdgeInsets.all(0.0),
                         iconPadding:
                             EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                         color: FlutterFlowTheme.of(context).primary,

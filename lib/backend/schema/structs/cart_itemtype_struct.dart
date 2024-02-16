@@ -1,4 +1,5 @@
 // ignore_for_file: unnecessary_getters_setters
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '/backend/schema/util/firestore_util.dart';
@@ -44,8 +45,9 @@ class CartItemtypeStruct extends FFFirebaseStruct {
         specialinstructions: data['specialinstructions'] as String?,
       );
 
-  static CartItemtypeStruct? maybeFromMap(dynamic data) =>
-      data is Map<String, dynamic> ? CartItemtypeStruct.fromMap(data) : null;
+  static CartItemtypeStruct? maybeFromMap(dynamic data) => data is Map
+      ? CartItemtypeStruct.fromMap(data.cast<String, dynamic>())
+      : null;
 
   Map<String, dynamic> toMap() => {
         'menuItemRef': _menuItemRef,

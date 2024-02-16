@@ -38,8 +38,8 @@ class MenuitemsRecord extends FirestoreRecord {
           ? parent.collection('menuitems')
           : FirebaseFirestore.instance.collectionGroup('menuitems');
 
-  static DocumentReference createDoc(DocumentReference parent) =>
-      parent.collection('menuitems').doc();
+  static DocumentReference createDoc(DocumentReference parent, {String? id}) =>
+      parent.collection('menuitems').doc(id);
 
   static Stream<MenuitemsRecord> getDocument(DocumentReference ref) =>
       ref.snapshots().map((s) => MenuitemsRecord.fromSnapshot(s));

@@ -47,13 +47,13 @@ class FirebasePhoneAuthManager extends ChangeNotifier {
 class FirebaseAuthManager extends AuthManager
     with
         EmailSignInManager,
-        AnonymousSignInManager,
-        AppleSignInManager,
         GoogleSignInManager,
-        GithubSignInManager,
+        AppleSignInManager,
+        FacebookSignInManager,
+        AnonymousSignInManager,
         JwtSignInManager,
-        PhoneSignInManager,
-        FacebookSignInManager {
+        GithubSignInManager,
+        PhoneSignInManager {
   // Set when using phone verification (after phone number is provided).
   String? _phoneAuthVerificationCode;
   // Set when using phone sign in in web mode (ignored otherwise).
@@ -62,6 +62,7 @@ class FirebaseAuthManager extends AuthManager
 
   @override
   Future signOut() {
+    logFirebaseEvent("SIGN_OUT");
     return FirebaseAuth.instance.signOut();
   }
 
@@ -72,6 +73,7 @@ class FirebaseAuthManager extends AuthManager
         print('Error: delete user attempted with no logged in user!');
         return;
       }
+      logFirebaseEvent("DELETE_USER");
       await currentUser?.delete();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'requires-recent-login') {
@@ -292,6 +294,7 @@ class FirebaseAuthManager extends AuthManager
   ) async {
     try {
       final userCredential = await signInFunc();
+      logFirebaseAuthEvent(userCredential?.user, authProvider);
       if (userCredential?.user != null) {
         await maybeCreateUser(userCredential!.user!);
       }
@@ -299,9 +302,16 @@ class FirebaseAuthManager extends AuthManager
           ? null
           : DeliveryEatFirebaseUser.fromUserCredential(userCredential);
     } on FirebaseAuthException catch (e) {
+      final errorMsg = switch (e.code) {
+        'email-already-in-use' =>
+          'Error: The email is already in use by a different account',
+        'INVALID_LOGIN_CREDENTIALS' =>
+          'Error: The supplied auth credential is incorrect, malformed or has expired',
+        _ => 'Error: ${e.message!}',
+      };
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.message!}')),
+        SnackBar(content: Text(errorMsg)),
       );
       return null;
     }

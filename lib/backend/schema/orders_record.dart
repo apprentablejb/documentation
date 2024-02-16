@@ -44,8 +44,8 @@ class OrdersRecord extends FirestoreRecord {
           ? parent.collection('Orders')
           : FirebaseFirestore.instance.collectionGroup('Orders');
 
-  static DocumentReference createDoc(DocumentReference parent) =>
-      parent.collection('Orders').doc();
+  static DocumentReference createDoc(DocumentReference parent, {String? id}) =>
+      parent.collection('Orders').doc(id);
 
   static Stream<OrdersRecord> getDocument(DocumentReference ref) =>
       ref.snapshots().map((s) => OrdersRecord.fromSnapshot(s));

@@ -221,10 +221,6 @@ final kTranslationsMap = <Map<String, Map<String, String>>>[
       'en': 'Menu items',
       'es': 'Elementos de menú',
     },
-    'jwx2fgno': {
-      'en': 'description',
-      'es': 'descripción',
-    },
   },
   // restaurants_info
   {

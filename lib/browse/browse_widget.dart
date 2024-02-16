@@ -2,9 +2,11 @@ import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'browse_model.dart';
@@ -12,14 +14,14 @@ export 'browse_model.dart';
 
 class BrowseWidget extends StatefulWidget {
   const BrowseWidget({
-    Key? key,
+    super.key,
     this.restaurantRef,
-  }) : super(key: key);
+  });
 
   final List<DocumentReference>? restaurantRef;
 
   @override
-  _BrowseWidgetState createState() => _BrowseWidgetState();
+  State<BrowseWidget> createState() => _BrowseWidgetState();
 }
 
 class _BrowseWidgetState extends State<BrowseWidget> {
@@ -32,6 +34,7 @@ class _BrowseWidgetState extends State<BrowseWidget> {
     super.initState();
     _model = createModel(context, () => BrowseModel());
 
+    logFirebaseEvent('screen_view', parameters: {'screen_name': 'browse'});
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
   }
 
@@ -44,6 +47,15 @@ class _BrowseWidgetState extends State<BrowseWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (isiOS) {
+      SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(
+          statusBarBrightness: Theme.of(context).brightness,
+          systemStatusBarContrastEnforced: true,
+        ),
+      );
+    }
+
     context.watch<FFAppState>();
 
     return StreamBuilder<List<RestaurantsRecord>>(
@@ -68,7 +80,9 @@ class _BrowseWidgetState extends State<BrowseWidget> {
         }
         List<RestaurantsRecord> browseRestaurantsRecordList = snapshot.data!;
         return GestureDetector(
-          onTap: () => FocusScope.of(context).requestFocus(_model.unfocusNode),
+          onTap: () => _model.unfocusNode.canRequestFocus
+              ? FocusScope.of(context).requestFocus(_model.unfocusNode)
+              : FocusScope.of(context).unfocus(),
           child: Scaffold(
             key: scaffoldKey,
             backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
@@ -106,7 +120,7 @@ class _BrowseWidgetState extends State<BrowseWidget> {
             body: SafeArea(
               top: true,
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(10.0, 10.0, 10.0, 10.0),
+                padding: EdgeInsets.all(10.0),
                 child: Builder(
                   builder: (context) {
                     final categories = functions
@@ -127,14 +141,17 @@ class _BrowseWidgetState extends State<BrowseWidget> {
                       itemBuilder: (context, categoriesIndex) {
                         final categoriesItem = categories[categoriesIndex];
                         return Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              10.0, 10.0, 10.0, 10.0),
+                          padding: EdgeInsets.all(10.0),
                           child: InkWell(
                             splashColor: Colors.transparent,
                             focusColor: Colors.transparent,
                             hoverColor: Colors.transparent,
                             highlightColor: Colors.transparent,
                             onTap: () async {
+                              logFirebaseEvent(
+                                  'BROWSE_PAGE_Container_kgoutabk_ON_TAP');
+                              logFirebaseEvent('Container_navigate_to');
+
                               context.pushNamed(
                                 'Homepage',
                                 queryParameters: {

@@ -6,6 +6,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,10 +15,10 @@ import 'login_model.dart';
 export 'login_model.dart';
 
 class LoginWidget extends StatefulWidget {
-  const LoginWidget({Key? key}) : super(key: key);
+  const LoginWidget({super.key});
 
   @override
-  _LoginWidgetState createState() => _LoginWidgetState();
+  State<LoginWidget> createState() => _LoginWidgetState();
 }
 
 class _LoginWidgetState extends State<LoginWidget>
@@ -101,8 +102,11 @@ class _LoginWidgetState extends State<LoginWidget>
     super.initState();
     _model = createModel(context, () => LoginModel());
 
+    logFirebaseEvent('screen_view', parameters: {'screen_name': 'login'});
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      logFirebaseEvent('LOGIN_PAGE_login_ON_INIT_STATE');
+      logFirebaseEvent('login_auth');
       GoRouter.of(context).prepareAuthEvent();
       if (_model.passwordController1.text != _model.password2Controller.text) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -131,12 +135,21 @@ class _LoginWidgetState extends State<LoginWidget>
       vsync: this,
       length: 2,
       initialIndex: 0,
-    );
+    )..addListener(() => setState(() {}));
     _model.emailAddressController1 ??= TextEditingController();
+    _model.emailAddressFocusNode1 ??= FocusNode();
+
     _model.passwordController1 ??= TextEditingController();
+    _model.passwordFocusNode1 ??= FocusNode();
+
     _model.password2Controller ??= TextEditingController();
+    _model.password2FocusNode ??= FocusNode();
+
     _model.emailAddressController2 ??= TextEditingController();
+    _model.emailAddressFocusNode2 ??= FocusNode();
+
     _model.passwordController2 ??= TextEditingController();
+    _model.passwordFocusNode2 ??= FocusNode();
 
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
   }
@@ -150,10 +163,21 @@ class _LoginWidgetState extends State<LoginWidget>
 
   @override
   Widget build(BuildContext context) {
+    if (isiOS) {
+      SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(
+          statusBarBrightness: Theme.of(context).brightness,
+          systemStatusBarContrastEnforced: true,
+        ),
+      );
+    }
+
     context.watch<FFAppState>();
 
     return GestureDetector(
-      onTap: () => FocusScope.of(context).requestFocus(_model.unfocusNode),
+      onTap: () => _model.unfocusNode.canRequestFocus
+          ? FocusScope.of(context).requestFocus(_model.unfocusNode)
+          : FocusScope.of(context).unfocus(),
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: Colors.white,
@@ -179,8 +203,7 @@ class _LoginWidgetState extends State<LoginWidget>
               Align(
                 alignment: AlignmentDirectional(0.0, 0.0),
                 child: Padding(
-                  padding:
-                      EdgeInsetsDirectional.fromSTEB(12.0, 12.0, 12.0, 12.0),
+                  padding: EdgeInsets.all(12.0),
                   child: Container(
                     width: double.infinity,
                     height: MediaQuery.sizeOf(context).height * 0.8,
@@ -268,6 +291,8 @@ class _LoginWidgetState extends State<LoginWidget>
                                               child: TextFormField(
                                                 controller: _model
                                                     .emailAddressController1,
+                                                focusNode: _model
+                                                    .emailAddressFocusNode1,
                                                 autofocus: true,
                                                 autofillHints: [
                                                   AutofillHints.email
@@ -336,9 +361,7 @@ class _LoginWidgetState extends State<LoginWidget>
                                                   filled: true,
                                                   fillColor: Colors.white,
                                                   contentPadding:
-                                                      EdgeInsetsDirectional
-                                                          .fromSTEB(24.0, 24.0,
-                                                              24.0, 24.0),
+                                                      EdgeInsets.all(24.0),
                                                 ),
                                                 style:
                                                     FlutterFlowTheme.of(context)
@@ -360,6 +383,8 @@ class _LoginWidgetState extends State<LoginWidget>
                                               child: TextFormField(
                                                 controller:
                                                     _model.passwordController1,
+                                                focusNode:
+                                                    _model.passwordFocusNode1,
                                                 autofocus: true,
                                                 autofillHints: [
                                                   AutofillHints.password
@@ -429,9 +454,7 @@ class _LoginWidgetState extends State<LoginWidget>
                                                   filled: true,
                                                   fillColor: Colors.white,
                                                   contentPadding:
-                                                      EdgeInsetsDirectional
-                                                          .fromSTEB(24.0, 24.0,
-                                                              24.0, 24.0),
+                                                      EdgeInsets.all(24.0),
                                                   suffixIcon: InkWell(
                                                     onTap: () => setState(
                                                       () => _model
@@ -470,6 +493,8 @@ class _LoginWidgetState extends State<LoginWidget>
                                               child: TextFormField(
                                                 controller:
                                                     _model.password2Controller,
+                                                focusNode:
+                                                    _model.password2FocusNode,
                                                 autofocus: true,
                                                 autofillHints: [
                                                   AutofillHints.password
@@ -539,9 +564,7 @@ class _LoginWidgetState extends State<LoginWidget>
                                                   filled: true,
                                                   fillColor: Colors.white,
                                                   contentPadding:
-                                                      EdgeInsetsDirectional
-                                                          .fromSTEB(24.0, 24.0,
-                                                              24.0, 24.0),
+                                                      EdgeInsets.all(24.0),
                                                   suffixIcon: InkWell(
                                                     onTap: () => setState(
                                                       () => _model
@@ -580,6 +603,10 @@ class _LoginWidgetState extends State<LoginWidget>
                                                       0.0, 0.0, 0.0, 16.0),
                                               child: FFButtonWidget(
                                                 onPressed: () async {
+                                                  logFirebaseEvent(
+                                                      'LOGIN_PAGE_GET_STARTED_BTN_ON_TAP');
+                                                  logFirebaseEvent(
+                                                      'Button_auth');
                                                   GoRouter.of(context)
                                                       .prepareAuthEvent();
                                                   if (_model.passwordController1
@@ -718,6 +745,10 @@ class _LoginWidgetState extends State<LoginWidget>
                                                                     16.0),
                                                         child: FFButtonWidget(
                                                           onPressed: () async {
+                                                            logFirebaseEvent(
+                                                                'LOGIN_CONTINUE_WITH_GOOGLE_BTN_ON_TAP');
+                                                            logFirebaseEvent(
+                                                                'Button_auth');
                                                             GoRouter.of(context)
                                                                 .prepareAuthEvent();
                                                             final user =
@@ -807,6 +838,10 @@ class _LoginWidgetState extends State<LoginWidget>
                                                                   FFButtonWidget(
                                                                 onPressed:
                                                                     () async {
+                                                                  logFirebaseEvent(
+                                                                      'LOGIN_CONTINUE_WITH_APPLE_BTN_ON_TAP');
+                                                                  logFirebaseEvent(
+                                                                      'Button_auth');
                                                                   GoRouter.of(
                                                                           context)
                                                                       .prepareAuthEvent();
@@ -963,6 +998,8 @@ class _LoginWidgetState extends State<LoginWidget>
                                               child: TextFormField(
                                                 controller: _model
                                                     .emailAddressController2,
+                                                focusNode: _model
+                                                    .emailAddressFocusNode2,
                                                 autofocus: true,
                                                 autofillHints: [
                                                   AutofillHints.email
@@ -1062,6 +1099,8 @@ class _LoginWidgetState extends State<LoginWidget>
                                               child: TextFormField(
                                                 controller:
                                                     _model.passwordController2,
+                                                focusNode:
+                                                    _model.passwordFocusNode2,
                                                 autofocus: true,
                                                 autofillHints: [
                                                   AutofillHints.password
@@ -1179,6 +1218,10 @@ class _LoginWidgetState extends State<LoginWidget>
                                                       0.0, 0.0, 0.0, 16.0),
                                               child: FFButtonWidget(
                                                 onPressed: () async {
+                                                  logFirebaseEvent(
+                                                      'LOGIN_PAGE_SIGN_IN_BTN_ON_TAP');
+                                                  logFirebaseEvent(
+                                                      'Button_auth');
                                                   GoRouter.of(context)
                                                       .prepareAuthEvent();
 
@@ -1289,6 +1332,10 @@ class _LoginWidgetState extends State<LoginWidget>
                                                           0.0, 0.0, 0.0, 16.0),
                                                   child: FFButtonWidget(
                                                     onPressed: () async {
+                                                      logFirebaseEvent(
+                                                          'LOGIN_CONTINUE_WITH_GOOGLE_BTN_ON_TAP');
+                                                      logFirebaseEvent(
+                                                          'Button_auth');
                                                       GoRouter.of(context)
                                                           .prepareAuthEvent();
                                                       final user =
@@ -1370,6 +1417,10 @@ class _LoginWidgetState extends State<LoginWidget>
                                                                     16.0),
                                                         child: FFButtonWidget(
                                                           onPressed: () async {
+                                                            logFirebaseEvent(
+                                                                'LOGIN_CONTINUE_WITH_APPLE_BTN_ON_TAP');
+                                                            logFirebaseEvent(
+                                                                'Button_auth');
                                                             GoRouter.of(context)
                                                                 .prepareAuthEvent();
                                                             final user =
@@ -1457,6 +1508,10 @@ class _LoginWidgetState extends State<LoginWidget>
                                                       0.0, 0.0, 0.0, 16.0),
                                               child: FFButtonWidget(
                                                 onPressed: () async {
+                                                  logFirebaseEvent(
+                                                      'LOGIN_PAGE_FORGOT_PASSWORD?_BTN_ON_TAP');
+                                                  logFirebaseEvent(
+                                                      'Button_auth');
                                                   GoRouter.of(context)
                                                       .prepareAuthEvent();
                                                   final user = await authManager
@@ -1560,7 +1615,9 @@ class _LoginWidgetState extends State<LoginWidget>
                                 ),
                               ],
                               controller: _model.tabBarController,
-                              onTap: (value) => setState(() {}),
+                              onTap: (i) async {
+                                [() async {}, () async {}][i]();
+                              },
                             ),
                           ),
                         ],

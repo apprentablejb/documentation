@@ -38,8 +38,8 @@ class ReviewsRecord extends FirestoreRecord {
           ? parent.collection('reviews')
           : FirebaseFirestore.instance.collectionGroup('reviews');
 
-  static DocumentReference createDoc(DocumentReference parent) =>
-      parent.collection('reviews').doc();
+  static DocumentReference createDoc(DocumentReference parent, {String? id}) =>
+      parent.collection('reviews').doc(id);
 
   static Stream<ReviewsRecord> getDocument(DocumentReference ref) =>
       ref.snapshots().map((s) => ReviewsRecord.fromSnapshot(s));

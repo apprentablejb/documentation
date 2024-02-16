@@ -7,6 +7,7 @@ import '/flutter_flow/lat_lng.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mapbox_search/mapbox_search.dart';
 import 'package:provider/provider.dart';
@@ -15,14 +16,14 @@ export 'restaurants_info_model.dart';
 
 class RestaurantsInfoWidget extends StatefulWidget {
   const RestaurantsInfoWidget({
-    Key? key,
+    super.key,
     required this.restaurantRef,
-  }) : super(key: key);
+  });
 
   final DocumentReference? restaurantRef;
 
   @override
-  _RestaurantsInfoWidgetState createState() => _RestaurantsInfoWidgetState();
+  State<RestaurantsInfoWidget> createState() => _RestaurantsInfoWidgetState();
 }
 
 class _RestaurantsInfoWidgetState extends State<RestaurantsInfoWidget> {
@@ -35,6 +36,8 @@ class _RestaurantsInfoWidgetState extends State<RestaurantsInfoWidget> {
     super.initState();
     _model = createModel(context, () => RestaurantsInfoModel());
 
+    logFirebaseEvent('screen_view',
+        parameters: {'screen_name': 'restaurants_info'});
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
   }
 
@@ -47,6 +50,15 @@ class _RestaurantsInfoWidgetState extends State<RestaurantsInfoWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (isiOS) {
+      SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(
+          statusBarBrightness: Theme.of(context).brightness,
+          systemStatusBarContrastEnforced: true,
+        ),
+      );
+    }
+
     context.watch<FFAppState>();
 
     return StreamBuilder<RestaurantsRecord>(
@@ -71,7 +83,9 @@ class _RestaurantsInfoWidgetState extends State<RestaurantsInfoWidget> {
         }
         final restaurantsInfoRestaurantsRecord = snapshot.data!;
         return GestureDetector(
-          onTap: () => FocusScope.of(context).requestFocus(_model.unfocusNode),
+          onTap: () => _model.unfocusNode.canRequestFocus
+              ? FocusScope.of(context).requestFocus(_model.unfocusNode)
+              : FocusScope.of(context).unfocus(),
           child: Scaffold(
             key: scaffoldKey,
             backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
@@ -108,7 +122,12 @@ class _RestaurantsInfoWidgetState extends State<RestaurantsInfoWidget> {
                         width: double.infinity,
                         height: 300.0,
                         fit: BoxFit.cover,
-                        borderRadius: BorderRadius.circular(0.0),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(0.0),
+                          bottomRight: Radius.circular(0.0),
+                          topLeft: Radius.circular(0.0),
+                          topRight: Radius.circular(0.0),
+                        ),
                         markerColor: FlutterFlowTheme.of(context).tertiary,
                         zoom: 12,
                         tilt: 0,
@@ -192,6 +211,9 @@ class _RestaurantsInfoWidgetState extends State<RestaurantsInfoWidget> {
                             EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
                         child: FFButtonWidget(
                           onPressed: () async {
+                            logFirebaseEvent(
+                                'RESTAURANTS_INFO_PAGE_GO_BACK_BTN_ON_TAP');
+                            logFirebaseEvent('Button_navigate_back');
                             context.safePop();
                           },
                           text: FFLocalizations.of(context).getText(
@@ -200,8 +222,7 @@ class _RestaurantsInfoWidgetState extends State<RestaurantsInfoWidget> {
                           options: FFButtonOptions(
                             width: 200.0,
                             height: 50.0,
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                                0.0, 0.0, 0.0, 0.0),
+                            padding: EdgeInsets.all(0.0),
                             iconPadding: EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
                             color: FlutterFlowTheme.of(context).primary,
